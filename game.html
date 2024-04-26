@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: red;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .card {
+            border-radius: 5px;
+            background-color: green;
+            color: black;
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            border: 3px solid white;
+            display: inline-block;
+            cursor: pointer;
+            padding-top: 70px;
+            text-align: center;
+        }
+       
+
+
+        #game-board {
+            margin-top: 20px;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .match {
+            background-color: black;
+            color: white;
+        }
+        .new-game-button {
+            font-size: 20px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            background-color: blue;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+    <title>Memory Card Game</title>
+</head>
+<body>
+
+    <h1>Memory Card Game</h1>
+
+    <div id="game-board"></div>
+    <p id="result"></p>
+   
+    <script>
+        const cards = ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'E'];
+        let shuffledCards = [];
+
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+
+            return array;
+        }
+
+        function createGameBoard() {
+            shuffledCards = shuffle(cards);
+
+            const gameBoard = document.getElementById('game-board');
+            gameBoard.innerHTML = '';
+
+            for (let i = 0; i < shuffledCards.length; i++) {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.index = i;
+                card.textContent = '?';
+                card.addEventListener('click', flipCard);
+                gameBoard.appendChild(card);
+            }
+        }
+
+        let flippedCards = [];
+        let count = 0;
+
+        function flipCard() {
+            const cardIndex = this.dataset.index;
+            this.textContent = shuffledCards[cardIndex];
+            this.removeEventListener('click', flipCard);
+            this.classList.add('flip');
+            flippedCards.push({ index: cardIndex, value: shuffledCards[cardIndex] });
+
+            if (flippedCards.length === 2) {
+                setTimeout(checkMatch, 500);
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            const cardElements = document.querySelectorAll('.card');
+            if (card1.value === card2.value) {
+                document.getElementById('result').textContent = 'Match!';
+                flippedCards = [];
+                cardElements[card1.index].classList.add('match');
+                cardElements[card2.index].classList.add('match');
+                count += 1;
+                if (count == 5) {
+                    document.getElementById('result').textContent = 'Congratulations! You won!';
+                    const newGameButton = document.createElement("button");
+                    newGameButton.textContent = "New Game";
+                    newGameButton.classList.add('new-game-button');
+                    newGameButton.addEventListener('click', () => {
+                        createGameBoard();
+                        count = 0;
+                        document.getElementById('result').textContent = '';
+                        newGameButton.remove(); 
+                    });
+                    document.body.appendChild(newGameButton);
+                }
+            } else {
+                cardElements[card1.index].textContent = '?';
+                cardElements[card2.index].textContent = '?';
+                cardElements[card1.index].addEventListener('click', flipCard);
+                cardElements[card2.index].addEventListener('click', flipCard);
+                cardElements[card1.index].classList.remove('flip');
+                cardElements[card2.index].classList.remove('flip');
+                document.getElementById('result').textContent = 'Try again!';
+                flippedCards = [];
+            }
+        }
+
+        createGameBoard();
+    </script>
+
+</body>
+</html>
